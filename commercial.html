@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commercial Robotics | Stellar Robotics Education</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #8B4513; /* Brown */
+            --secondary: #FFFFFF; /* White */
+            --accent: #000000; /* Black */
+            --dark: #1A120B;
+            --surface: rgba(139, 69, 19, 0.8);
+            --light: #ffffff;
+            --gray: #414344;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1A120B 0%, #3C2A21 50%, #1A120B 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* 3D Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: white;
+            padding: 1rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            height: 50px;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        /* Sidebar Menu */
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: var(--dark);
+            z-index: 1001;
+            transition: all 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-header img {
+            height: 40px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .sidebar-menu li {
+            list-style: none;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .sidebar-menu a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Overlay for sidebar */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .page-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Button Style */
+        .get-btn {
+          width: 10em;
+          position: relative;
+          height: 3.5em;
+          border: 3px ridge #8B4513;
+          outline: none;
+          background-color: transparent;
+          color: white;
+          transition: 1s;
+          border-radius: 0.3em;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          margin-top: 1.5rem;
+        }
+
+        .get-btn::after {
+          content: none;
+          position: absolute;
+          top: -10px;
+          left: 3%;
+          width: 95%;
+          height: 40%;
+          background-color: #212121;
+          transition: 0.5s;
+          transform-origin: center;
+        }
+
+        .get-btn::before {
+          content: none;
+          transform-origin: center;
+          position: absolute;
+          top: 80%;
+          left: 3%;
+          width: 95%;
+          height: 40%;
+          background-color: #212121;
+          transition: 0.5s;
+        }
+
+        .get-btn:hover::before, .get-btn:hover::after {
+          transform: scale(0)
+        }
+
+        .get-btn:hover {
+          box-shadow: inset 0px 0px 25px #8B4513;
+        }
+
+        /* Content Sections */
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title:after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: var(--primary);
+            margin: 0.5rem auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(26, 18, 11, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .feature-card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card-bottom {
+            margin-top: auto;
+            padding-top: 1.5rem;
+        }
+
+        /* Assign different background images to each card */
+        .feature-card:nth-child(1) {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://plus.unsplash.com/premium_photo-1661905641983-5737fc053187?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+        }
+
+        .feature-card:nth-child(2) {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://images.unsplash.com/photo-1603732551658-5fabbafa84eb?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+        }
+
+        .feature-card:nth-child(3) {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://images.unsplash.com/photo-1644987708868-1a97a5341ec3?q=80&w=1339&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+        }
+
+        .feature-card:nth-child(4) {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://plus.unsplash.com/premium_photo-1754244539977-2fdbcdc6b1bd?q=80&w=1655&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+        }
+
+        .feature-card:nth-child(5) {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://plus.unsplash.com/premium_photo-1664297939846-330cfd170bae?q=80&w=1455&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+        }
+
+        .feature-card:nth-child(6) {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://images.unsplash.com/photo-1744900647430-965ccc7a6078?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(139, 69, 19, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        /* Industries Section */
+        .industries-section {
+            background: var(--primary);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 10px;
+            margin-top: 3rem;
+        }
+
+        .industries-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .industry-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .industry-item {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .industry-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .industry-item i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background: var(--primary);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 3rem;
+        }
+
+        .contact-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer Program Links Animation */
+        .program-link {
+            width: auto;
+            height: auto;
+            transition: .5s linear;
+            position: relative;
+            display: block;
+            overflow: hidden;
+            text-align: left;
+            margin: 0.5rem 0;
+            background: transparent;
+            font-weight: 500;
+            color: #ccc;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+
+        .program-link:before {
+            position: absolute;
+            content: '';
+            left: 0;
+            bottom: 0;
+            height: 2px;
+            width: 100%;
+            border-bottom: 2px solid transparent;
+            border-left: 2px solid transparent;
+            box-sizing: border-box;
+            transform: translateX(100%);
+        }
+
+        .program-link:after {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            border-top: 2px solid transparent;
+            border-right: 2px solid transparent;
+            box-sizing: border-box;
+            transform: translateX(-100%);
+        }
+
+        .program-link:hover {
+            color: #8B4513;
+        }
+
+        .program-link:hover:before {
+            border-color: #8B4513;
+            height: 100%;
+            transform: translateX(0);
+            transition: .3s transform linear, .3s height linear .3s;
+        }
+
+        .program-link:hover:after {
+            border-color: #8B4513;
+            height: 100%;
+            transform: translateX(0);
+            transition: .3s transform linear, .3s height linear .5s;
+        }
+
+        /* Footer Styles */
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 3rem 0;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-about {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer-logo-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            align-self: flex-start;
+        }
+
+        .footer-logo {
+            height: 50px;
+        }
+
+        .footer-about p {
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a.facebook {
+            background-color: #3b5998;
+        }
+
+        .footer-social a.instagram {
+            background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        }
+
+        .footer-social a.linkedin {
+            background-color: #0077b5;
+        }
+
+        .footer-social a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .footer-links h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #8B4513;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #8B4513;
+        }
+
+        .footer-newsletter {
+            h3 {
+                font-family: 'Orbitron', sans-serif;
+                color: #8B4513;
+                font-size: 1.2rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        .footer-newsletter input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+        }
+
+        .footer-newsletter input::placeholder {
+            color: #aaa;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #1A120B;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #8B4513;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #8B4513;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #8B4513;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+        }
+
+        .form-group select option {
+               background-color: black; 
+               color: white;            
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .sidebar {
+                width: 250px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .page-header p {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .get-btn {
+                width: 100%;
+                max-width: 200px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <button class="menu-toggle mr-4" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <img src="logo.png" alt="Stellar Robotics Logo" class="logo">
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="home.html" class="text-gray-800 hover:text-brown-600">Home</a>
+                <a href="aboutus.html" class="text-gray-800 hover:text-brown-600">About Us</a>
+                <a href="school.html" class="text-gray-800 hover:text-brown-600">School Robotics</a>
+                <a href="college.html" class="text-gray-800 hover:text-brown-600">College Robotics</a>
+                <a href="commercial.html" class="font-bold text-gray-800 hover:text-brown-600">Commercial Robotics</a>
+                <a href="contact.html" class="text-gray-800 hover:text-brown-600">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="Stellar Robotics Logo">
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+            <li><a href="school.html"><i class="fas fa-graduation-cap"></i> School Robotics</a></li>
+            <li><a href="college.html"><i class="fas fa-university"></i> College Robotics</a></li>
+            <li><a href="commercial.html"><i class="fas fa-industry"></i> Commercial Robotics</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Overlay for sidebar -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header">
+            <h1>Commercial Robotics</h1>
+            <p>Train your team for real-world automation solutions in various industries. Ideal for Startups, Companies, Vocational Institutes & Enthusiasts.</p>
+            <button class="get-btn" id="heroGetBtn">Get Started</button>
+        </section>
+
+        <!-- Program Overview -->
+        <section class="content-section">
+            <h2 class="section-title">Program Overview</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">Our Commercial Robotics program provides practical, industry-focused training to help businesses and professionals implement automation solutions that increase efficiency, reduce costs, and drive innovation.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <h3>Industrial Robotics</h3>
+                        <p>Fundamentals of industrial robotic systems, programming, and integration into manufacturing processes.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Industrial Robotics">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3>Arduino/PLC Systems</h3>
+                        <p>Hands-on training with programmable logic controllers and Arduino-based automation solutions.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Arduino/PLC Systems">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-sensor"></i>
+                        </div>
+                        <h3>Sensor Integration</h3>
+                        <p>Real-time sensor integration for monitoring and controlling automated systems.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Sensor Integration">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h3>Smart Automation</h3>
+                        <p>Design and implementation of smart home and office automation solutions.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Smart Automation">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-voice"></i>
+                        </div>
+                        <h3>Voice Control</h3>
+                        <p>Developing voice-controlled robotic systems for hands-free operation.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Voice Control">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile"></i>
+                        </div>
+                        <h3>App Control</h3>
+                        <p>Creating mobile applications to remotely monitor and control robotic systems.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="App Control">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Industries Section -->
+        <section class="industries-section">
+            <h2>Industry Applications</h2>
+            <p class="text-center max-w-3xl mx-auto">Our commercial robotics solutions are tailored for various industries to address specific automation challenges and opportunities.</p>
+            
+            <div class="industry-list">
+                <div class="industry-item">
+                    <i class="fas fa-tractor"></i>
+                    <h3>Agriculture</h3>
+                    <p>Automated farming equipment, crop monitoring, and precision agriculture solutions.</p>
+                </div>
+                
+                <div class="industry-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Security</h3>
+                    <p>Surveillance robots, automated patrol systems, and smart security solutions.</p>
+                </div>
+                
+                <div class="industry-item">
+                    <i class="fas fa-store"></i>
+                    <h3>Retail</h3>
+                    <p>Inventory management robots, automated checkout systems, and customer service bots.</p>
+                </div>
+                
+                <div class="industry-item">
+                    <i class="fas fa-warehouse"></i>
+                    <h3>Logistics</h3>
+                    <p>Automated guided vehicles, sorting systems, and warehouse automation.</p>
+                </div>
+                
+                <div class="industry-item">
+                    <i class="fas fa-medkit"></i>
+                    <h3>Healthcare</h3>
+                    <p>Medical assistance robots, automated dispensing systems, and sanitation robots.</p>
+                </div>
+                
+                <div class="industry-item">
+                    <i class="fas fa-utensils"></i>
+                    <h3>Hospitality</h3>
+                    <p>Service robots, automated cleaning systems, and smart room automation.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Automation Features -->
+        <section class="content-section">
+            <h2 class="section-title">Automation Features</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3>Custom Solutions</h3>
+                        <p>We design automation solutions tailored to your specific business needs and operational requirements.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Custom Solutions">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h3>Hands-on Training</h3>
+                        <p>Practical training sessions to ensure your team can effectively implement and maintain automated systems.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Hands-on Training">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h3>Ongoing Support</h3>
+                        <p>Comprehensive support services to help you troubleshoot and optimize your automation systems.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Ongoing Support">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <h3>Cost Analysis</h3>
+                        <p>ROI assessment to demonstrate the financial benefits of automation for your business.</p>
+                        <div class="feature-card-bottom">
+                            <button class="get-btn" data-program="Cost Analysis">Get Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <h2>Ready to Automate Your Business?</h2>
+            <p>Contact us today to discuss how our commercial robotics solutions can transform your operations.</p>
+            <button class="get-btn" id="bottomGetBtn">Get Started</button>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <div class="footer-logo-container">
+                        <img src="logo.png" alt="Stellar Robotics Logo" class="footer-logo">
+                    </div>
+                    <p>Empowering businesses with cutting-edge robotics and automation solutions.</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/stellarskillspvtltd" class="facebook" target="_blank">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://www.instagram.com/stellarskillspvtltd" class="instagram" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/stellar-skills-pvt-ltd" class="linkedin" target="_blank">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="home.html">Home</a></li>
+                        <li><a href="aboutus.html">About Us</a></li>
+                        <li><a href="school.html">School Robotics</a></li>
+                        <li><a href="college.html">College Robotics</a></li>
+                        <li><a href="commercial.html">Commercial Robotics</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h3>Our Solutions</h3>
+                    <ul>
+                        <li><button class="program-link" data-program="Industrial Automation">Industrial Automation</button></li>
+                        <li><button class="program-link" data-program="Smart Home Solutions">Smart Home Solutions</button></li>
+                        <li><button class="program-link" data-program="Warehouse Robotics">Warehouse Robotics</button></li>
+                        <li><button class="program-link" data-program="Agricultural Automation">Agricultural Automation</button></li>
+                        <li><button class="program-link" data-program="Retail Automation">Retail Automation</button></li>
+                        <li><button class="program-link" data-program="Custom Robotics">Custom Robotics</button></li>
+                    </ul>
+                </div>
+
+                <div class="footer-newsletter">
+                    <h3>Newsletter</h3>
+                    <p class="text-gray-400 mb-4">Subscribe to get updates on our latest automation solutions.</p>
+                    <form id="newsletterForm">
+                        <input type="email" placeholder="Your email" required>
+                        <button type="submit" class="get-btn" style="width: 100%; margin-top: 0.5rem;">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Stellar Robotics Pvt Ltd. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Get Started Modal -->
+    <div id="getModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="section-title">Commercial Robotics Consultation</h2>
+            <form id="getForm">
+                <input type="hidden" id="selectedProgram">
+                <div class="form-group">
+                    <label for="companyName">Company Name</label>
+                    <input type="text" id="companyName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contactName">Contact Person</label>
+                    <input type="text" id="contactName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contactPosition">Position</label>
+                    <input type="text" id="contactPosition" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="industry">Industry</label>
+                    <select id="industry" required>
+                        <option value="">Select Industry</option>
+                        <option value="manufacturing">Manufacturing</option>
+                        <option value="agriculture">Agriculture</option>
+                        <option value="retail">Retail</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="logistics">Logistics</option>
+                        <option value="hospitality">Hospitality</option>
+                        <option value="security">Security</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="challenge">Business Challenge</label>
+                    <textarea id="challenge" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employees">Number of Employees to Train</label>
+                    <input type="number" id="employees" min="1">
+                </div>
+                
+                <button type="submit" class="get-btn" style="width: 100%;">Request Consultation</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Optimized 3D Background with Three.js
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('bg-canvas'),
+            alpha: true,
+            antialias: false
+        });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+        // Simplified geometry for better performance
+        const geometry = new THREE.TorusGeometry(6, 1.5, 8, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x8B4513,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2
+        });
+        const torus = new THREE.Mesh(geometry, material);
+        scene.add(torus);
+
+        const boxGeometry = new THREE.BoxGeometry(3, 3, 3);
+        const boxMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xA0522D,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.15
+        });
+        const box = new THREE.Mesh(boxGeometry, boxMaterial);
+        box.position.set(-10, 6, -6);
+        scene.add(box);
+
+        const sphereGeometry = new THREE.SphereGeometry(4, 16, 16);
+        const sphereMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x000000,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.1
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(10, -6, -4);
+        scene.add(sphere);
+
+        camera.position.setZ(20);
+
+        // Optimized animation loop
+        let frameCount = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (frameCount % 3 === 0) {
+                torus.rotation.x += 0.005;
+                torus.rotation.y += 0.003;
+                box.rotation.x += 0.006;
+                box.rotation.y += 0.006;
+                sphere.rotation.x += 0.003;
+                sphere.rotation.y += 0.005;
+            }
+            frameCount++;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Scroll indicator
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercent = (scrollTop / scrollHeight) * 100;
+            document.documentElement.style.setProperty('--scroll-percent', scrollPercent + '%');
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar functionality
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const menuToggle = document.getElementById('menuToggle');
+            const closeSidebar = document.getElementById('closeSidebar');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            });
+            
+            closeSidebar.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            // Get Modal
+            const getModal = document.getElementById('getModal');
+            const heroGetBtn = document.getElementById('heroGetBtn');
+            const bottomGetBtn = document.getElementById('bottomGetBtn');
+            const getBtns = document.querySelectorAll('.get-btn');
+            const programLinks = document.querySelectorAll('.program-link');
+            const closeGetBtn = document.querySelector('#getModal .close');
+            const getForm = document.getElementById('getForm');
+            const selectedProgramInput = document.getElementById('selectedProgram');
+
+            // Function to open modal
+            function openGetModal(program = '') {
+                if (program) {
+                    selectedProgramInput.value = program;
+                }
+                getModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Hero get button
+            if (heroGetBtn) {
+                heroGetBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openGetModal('Commercial Robotics Solutions');
+                });
+            }
+
+            // Bottom get button
+            if (bottomGetBtn) {
+                bottomGetBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openGetModal('Commercial Robotics Solutions');
+                });
+            }
+
+            // All get buttons
+            getBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const program = this.getAttribute('data-program') || 'Commercial Robotics Solutions';
+                    openGetModal(program);
+                });
+            });
+
+            // Program links in footer
+            programLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const program = this.getAttribute('data-program') || 'Commercial Robotics Solutions';
+                    openGetModal(program);
+                });
+            });
+
+            // Close modal
+            if (closeGetBtn) {
+                closeGetBtn.addEventListener('click', function() {
+                    getModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                });
+            }
+
+            // Get form submission
+            if (getForm) {
+                getForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Thank you for your interest in ' + (selectedProgramInput.value || 'our solutions') + '! Our team will contact you shortly.');
+                    getModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    this.reset();
+                });
+            }
+
+            // Newsletter form submission
+            const newsletterForm = document.getElementById('newsletterForm');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = newsletterForm.querySelector('input[type="email"]').value;
+                    alert(`Thank you for subscribing with ${email}! You'll receive updates on our solutions.`);
+                    newsletterForm.reset();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

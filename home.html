@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | Stellar Robotics Education</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #8B4513; /* Brown */
+            --secondary: #FFFFFF; /* White */
+            --accent: #000000; /* Black */
+            --dark: #1A120B;
+            --surface: rgba(139, 69, 19, 0.8);
+            --light: #ffffff;
+            --gray: #414344;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1A120B 0%, #3C2A21 50%, #1A120B 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* 3D Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: white;
+            padding: 1rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            height: 50px;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        /* Sidebar Menu */
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: var(--dark);
+            z-index: 1001;
+            transition: all 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-header img {
+            height: 40px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .sidebar-menu li {
+            list-style: none;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .sidebar-menu a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Overlay for sidebar */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1570090958944-9556cce82582?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 4rem 2rem;
+            margin-bottom: 3rem;
+            border-radius: 20px;
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Button Style */
+        .action-btn {
+          width: 10em;
+          position: relative;
+          height: 3.5em;
+          border: 3px ridge #8B4513;
+          outline: none;
+          background-color: transparent;
+          color: white;
+          transition: 1s;
+          border-radius: 0.3em;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          margin-top: 1.5rem;
+        }
+
+        .action-btn.secondary-btn {
+            background-color: var(--primary);
+        }
+
+        .action-btn::after {
+          content: none;
+          position: absolute;
+          top: -10px;
+          left: 3%;
+          width: 95%;
+          height: 40%;
+          background-color: #212121;
+          transition: 0.5s;
+          transform-origin: center;
+        }
+
+        .action-btn::before {
+          content: none;
+          transform-origin: center;
+          position: absolute;
+          top: 80%;
+          left: 3%;
+          width: 95%;
+          height: 40%;
+          background-color: #212121;
+          transition: 0.5s;
+        }
+
+        .action-btn:hover::before, .action-btn:hover::after {
+          transform: scale(0)
+        }
+
+        .action-btn:hover {
+          box-shadow: inset 0px 0px 25px #8B4513;
+        }
+
+        /* Content Sections */
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title:after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: var(--primary);
+            margin: 0.5rem auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(26, 18, 11, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .feature-card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card-bottom {
+            margin-top: auto;
+            padding-top: 1.5rem;
+        }
+
+      
+        .school-card {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+        }
+
+        .college-card {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+        }
+
+        .commercial-card {
+            background: linear-gradient(rgba(26, 18, 11, 0.8), rgba(26, 18, 11, 0.8)), url('https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(139, 69, 19, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+       /* School Slider */
+.schools-slider {
+    overflow: hidden;
+    position: relative;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    padding: 30px 0;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+.schools-track {
+    display: flex;
+    animation: slide 15s linear infinite;
+    gap: 40px;
+    will-change: transform;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.school-item {
+    min-width: 280px; /* Increased from 200px */
+    height: 180px; /* Increased from 120px */
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 10px;
+    padding: 20px;
+    transition: all 0.4s ease;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 69, 19, 0.3); /* Brown border */
+}
+
+.school-item:hover {
+    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3); /* Brown glow */
+}
+
+.school-logo {
+    width: 120px; /* Doubled from 60px */
+    height: 120px; /* Doubled from 60px */
+    border-radius: 12px;
+    object-fit: contain; /* Changed from cover to maintain aspect ratio */
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.school-item:hover .school-logo {
+    transform: scale(1.1);
+    border-color: rgba(139, 69, 19, 0.6); /* Brown border on hover */
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slide {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } /* Changed from -100% for smoother loop */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .schools-track {
+        gap: 30px;
+        animation-duration: 15s;
+    }
+    
+    .school-item {
+        min-width: 220px;
+        height: 150px;
+    }
+    
+    .school-logo {
+        width: 90px;
+        height: 90px;
+    }
+}
+
+@media (max-width: 480px) {
+    .schools-slider {
+        padding: 20px 0;
+    }
+    
+    .school-item {
+        min-width: 180px;
+        height: 120px;
+    }
+    
+    .school-logo {
+        width: 70px;
+        height: 70px;
+    }
+}
+        /* Program Sections */
+        .program-section {
+            padding: 4rem 0;
+            margin: 3rem 0;
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .program-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 0;
+        }
+
+        .program-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            color: white;
+        }
+
+        /* Gallery Styles */
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            height: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #1A120B;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #8B4513;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #8B4513;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #8B4513;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+        }
+
+        .form-group select option {
+               background-color: black; 
+               color: white;            
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Footer Styles */
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 3rem 0;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-about {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer-logo-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            align-self: flex-start;
+        }
+
+        .footer-logo {
+            height: 50px;
+        }
+
+        .footer-about p {
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a.facebook {
+            background-color: #3b5998;
+        }
+
+        .footer-social a.instagram {
+            background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        }
+
+        .footer-social a.linkedin {
+            background-color: #0077b5;
+        }
+
+        .footer-social a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .footer-links h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #8B4513;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #8B4513;
+        }
+
+        .footer-newsletter input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+        }
+
+        .footer-newsletter input::placeholder {
+            color: #aaa;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .sidebar {
+                width: 250px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-btn {
+                width: 100%;
+                max-width: 200px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <button class="menu-toggle mr-4" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <img src="logo.png" alt="Stellar Robotics Logo" class="logo">
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="index.html" class="font-bold text-gray-800 hover:text-brown-600">Home</a>
+                <a href="aboutus.html" class="text-gray-800 hover:text-brown-600">About Us</a>
+                <a href="school.html" class="text-gray-800 hover:text-brown-600">School Robotics</a>
+                <a href="college.html" class="text-gray-800 hover:text-brown-600">College Robotics</a>
+                <a href="commercial.html" class="text-gray-800 hover:text-brown-600">Commercial Robotics</a>
+                <a href="contact.html" class="text-gray-800 hover:text-brown-600">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="Stellar Robotics Logo">
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+            <li><a href="school.html"><i class="fas fa-graduation-cap"></i> School Robotics</a></li>
+            <li><a href="college.html"><i class="fas fa-university"></i> College Robotics</a></li>
+            <li><a href="commercial.html"><i class="fas fa-industry"></i> Commercial Robotics</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Overlay for sidebar -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Stellar Robotics Education</h1>
+            <p>Empowering the next generation with cutting-edge robotics and programming education through innovative learning experiences.</p>
+            <div class="flex flex-wrap justify-center gap-4 mt-8">
+                <a href="aboutus.html" class="action-btn">
+                    <i class="fas fa-info-circle"></i> About Us
+                </a>
+                <a href="#services" class="action-btn">
+                    <i class="fas fa-cogs"></i> Our Services
+                </a>
+            </div>
+        </section>
+
+       <!-- Trusted Schools Section -->
+<section class="py-20 bg-black">
+    <div class="container mx-auto px-6">
+        <h2 class="text-4xl md:text-5xl font-bold text-center mb-12 text-white">
+            Trusted by Leading Institutions
+        </h2>
+        <div class="schools-slider overflow-hidden relative">
+            <div class="schools-track flex whitespace-nowrap animate-slide">
+                <!-- School Logos Only (No text) -->
+                <img src="school1.jpeg" alt="School 1" class="school-logo mx-4">
+                <img src="school2.jpeg" alt="School 2" class="school-logo mx-4">
+                <img src="school3.jpeg" alt="School 3" class="school-logo mx-4">
+                <img src="school4.jpeg" alt="School 4" class="school-logo mx-4">
+                <img src="school5.jpeg" alt="School 5" class="school-logo mx-4">
+                <img src="school6.jpeg" alt="School 6" class="school-logo mx-4">
+                <img src="school7.jpeg" alt="School 7" class="school-logo mx-4">
+                <img src="school8.jpeg" alt="School 8" class="school-logo mx-4">
+                <img src="school9.jpeg" alt="School 9" class="school-logo mx-4">
+                <img src="school10.jpeg" alt="School 10" class="school-logo mx-4">
+                <img src="school11.jpeg" alt="School 11" class="school-logo mx-4">
+                
+                <!-- Duplicate for smooth looping -->
+                <img src="school1.jpeg" alt="School 1" class="school-logo mx-4">
+                <img src="school2.jpeg" alt="School 2" class="school-logo mx-4">
+                <img src="school3.jpeg" alt="School 3" class="school-logo mx-4">
+                <img src="school4.jpeg" alt="School 4" class="school-logo mx-4">
+                <img src="school5.jpeg" alt="School 5" class="school-logo mx-4">
+                <img src="school6.jpeg" alt="School 6" class="school-logo mx-4">
+                <img src="school7.jpeg" alt="School 7" class="school-logo mx-4">
+                <img src="school8.jpeg" alt="School 8" class="school-logo mx-4">
+                <img src="school9.jpeg" alt="School 9" class="school-logo mx-4">
+                <img src="school10.jpeg" alt="School 10" class="school-logo mx-4">
+                <img src="school11.jpeg" alt="School 11" class="school-logo mx-4">
+            </div>
+        </div>
+    </div>
+</section>
+
+        <!-- Services Section -->
+        <section id="services" class="content-section">
+            <h2 class="section-title">Our Services</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">We offer comprehensive robotics education programs tailored to different age groups and skill levels.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card school-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3>School Robotics</h3>
+                        <p>Ignite young minds with the magic of robotics through playful learning and creative projects designed for students from Grade 1 to 8 (Ages 6 to 13).</p>
+                        <div class="feature-card-bottom">
+                            <a href="school.html" class="action-btn">Explore More</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card college-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h3>College Robotics</h3>
+                        <p>Advance your skills with microcontroller projects, IoT, and AI for a tech-driven tomorrow. Designed for High School, Diploma, and University Students (Age 14+).</p>
+                        <div class="feature-card-bottom">
+                            <a href="college.html" class="action-btn">Explore More</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card commercial-card">
+                    <div class="feature-card-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <h3>Commercial Robotics</h3>
+                        <p>Custom automation solutions and workforce training programs for businesses looking to implement robotics technology.</p>
+                        <div class="feature-card-bottom">
+                            <a href="commercial.html" class="action-btn">Explore More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- School Robotics Section -->
+        <section id="school-section" class="program-section" style="background-image: url('https://images.unsplash.com/photo-1532186773960-85649e5cb70b?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+            <div class="program-content">
+                <h2 class="section-title">School Robotics Program</h2>
+                <p class="text-center max-w-3xl mx-auto mb-8">Our school program is designed to introduce young students to the exciting world of robotics through hands-on, age-appropriate projects that make learning fun and engaging.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary-300">Program Highlights</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Basic robotics concepts for ages 6-13</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>LEGO Mindstorms and other child-friendly platforms</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Project-based learning approach</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Creative problem-solving activities</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary-300">Learning Outcomes</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Develop logical thinking and creativity</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Introduction to basic programming concepts</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Teamwork and collaboration skills</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Confidence in STEM subjects</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <a href="school.html" class="action-btn">Explore School Program</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- College Robotics Section -->
+        <section id="college-section" class="program-section" style="background-image: url('https://images.unsplash.com/photo-1603732551681-2e91159b9dc2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1500&q=80');">
+            <div class="program-content">
+                <h2 class="section-title">College Robotics Program</h2>
+                <p class="text-center max-w-3xl mx-auto mb-8">Our college program provides advanced robotics training for high school and university students, preparing them for careers in technology and engineering.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary-300">Program Highlights</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Advanced robotics concepts for ages 14+</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Arduino, Raspberry Pi, and industrial robotics</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>IoT and AI integration</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Competition preparation</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary-300">Learning Outcomes</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Master microcontroller programming</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Develop complex robotic systems</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Understand sensor integration and data processing</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Gain skills for tech careers</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <a href="college.html" class="action-btn">Explore College Program</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commercial Robotics Section -->
+        <section id="commercial-section" class="program-section" style="background-image: url('https://plus.unsplash.com/premium_photo-1676637656166-cb7b3a43b81a?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+            <div class="program-content">
+                <h2 class="section-title">Commercial Robotics Solutions</h2>
+                <p class="text-center max-w-3xl mx-auto mb-8">We provide custom robotics solutions and training programs for businesses looking to implement automation in their operations.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary-300">Our Offerings</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Custom automation solutions</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Industrial robotics implementation</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Workforce training programs</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                <span>Process optimization consulting</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary-300">Benefits</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Increased productivity and efficiency</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Reduced operational costs</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Improved product quality</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-star text-primary mr-2 mt-1"></i>
+                                <span>Future-proof your workforce</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <a href="commercial.html" class="action-btn">Explore Commercial Solutions</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section class="content-section">
+            <h2 class="section-title">Our Gallery</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">A glimpse into our training sessions, student projects, and automation solutions.</p>
+            
+            <div class="gallery-container">
+                <div class="gallery-item">
+                    <img src="slide1.jpg"> 
+                </div>
+
+                <div class="gallery-item">
+                    <img src="slide2.jpg">    
+                </div>
+
+                <div class="gallery-item">
+                    <img src="slide3.jpg">                    
+                </div>
+
+                <div class="gallery-item">
+                    <img src="slide4.jpg">
+                </div>
+
+                <div class="gallery-item">
+                    <img src="slide5.jpg">
+                </div>
+
+                <div class="gallery-item">
+                    <img src="slide6.jpg">
+                </div>
+            </div>
+            <div class="text-center mt-8">
+                <button id="viewGalleryBtn" class="action-btn">View Full Gallery</button>
+            </div>
+        </section>
+
+        <!-- Full Gallery Modal -->
+        <div id="galleryModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 class="section-title">Our Gallery</h2>
+                <div class="gallery-container">
+                    <!-- Will be populated with JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- Jobs Section -->
+<section class="content-section">
+    <h2 class="section-title">Career Opportunities</h2>
+    <p class="text-center max-w-3xl mx-auto mb-8">Join our team of passionate educators and automation experts.</p>
+    
+    <!-- Job 1 -->
+    <div class="flex flex-col md:flex-row items-center gap-8 mb-12 bg-gray-900 rounded-xl overflow-hidden">
+        <div class="md:w-1/2 p-8">
+            <h3 class="text-2xl font-bold mb-4 text-primary-300">Robotics Instructor</h3>
+            <p class="mb-6">Join our team as a Robotics Instructor and help shape the future of STEM education. We're looking for passionate individuals to teach robotics to students of all ages.</p>
+            <ul class="list-disc pl-5 mb-6 space-y-2">
+                <li>Location: Lahore</li>
+                <li>Type: Full-time</li>
+                <li>Experience: 2+ years in robotics education</li>
+            </ul>
+            <button class="action-btn apply-btn" data-job="Robotics Instructor">Apply Now</button>
+        </div>
+        <div class="md:w-1/2 h-full">
+            <img src="job.jpeg" alt="Robotics Instructor Job" class="w-full h-full object-cover">
+        </div>
+    </div>
+</section>
+
+        <!-- Job Application Modal -->
+        <div id="jobModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 class="section-title">Job Application</h2>
+                <form id="jobApplicationForm">
+                    <input type="hidden" id="jobPosition">
+                    <div class="form-group">
+                        <label for="applicantName">Full Name</label>
+                        <input type="text" id="applicantName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="applicantEmail">Email Address</label>
+                        <input type="email" id="applicantEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="applicantPhone">Phone Number</label>
+                        <input type="tel" id="applicantPhone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="applicantEducation">Highest Education</label>
+                        <input type="text" id="applicantEducation" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="applicantCity">City</label>
+                        <input type="text" id="applicantCity" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="applicantIntro">Short Introduction</label>
+                        <textarea id="applicantIntro" rows="3" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="action-btn" style="width: 100%;">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <div class="footer-logo-container">
+                        <img src="logo.png" alt="Stellar Robotics Logo" class="footer-logo">
+                    </div>
+                    <p>Empowering the next generation with cutting-edge robotics and programming education.</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/stellarskillspvtltd" class="facebook" target="_blank">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://www.instagram.com/stellarskillspvtltd" class="instagram" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/stellar-skills-pvt-ltd" class="linkedin" target="_blank">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="aboutus.html">About Us</a></li>
+                        <li><a href="school.html">School Robotics</a></li>
+                        <li><a href="college.html">College Robotics</a></li>
+                        <li><a href="commercial.html">Commercial Robotics</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h3>Our Programs</h3>
+                    <ul>
+                        <li><button class="program-link" data-program="Beginner Robotics">Beginner Robotics</button></li>
+                        <li><button class="program-link" data-program="Intermediate Robotics">Intermediate Robotics</button></li>
+                        <li><button class="program-link" data-program="Advanced Robotics">Advanced Robotics</button></li>
+                        <li><button class="program-link" data-program="Robotics Competitions">Robotics Competitions</button></li>
+                        <li><button class="program-link" data-program="Summer Robotics Camp">Summer Robotics Camp</button></li>
+                        <li><button class="program-link" data-program="Weekend Workshops">Weekend Workshops</button></li>
+                    </ul>
+                </div>
+
+                <div class="footer-newsletter">
+                    <h3>Newsletter</h3>
+                    <p class="text-gray-400 mb-4">Subscribe to get updates on new courses and programs.</p>
+                    <form id="newsletterForm">
+                        <input type="email" placeholder="Your email" required>
+                        <button type="submit" class="action-btn" style="width: 100%; margin-top: 0.5rem;">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Stellar Robotics Pvt Ltd. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Optimized 3D Background with Three.js
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('bg-canvas'),
+            alpha: true,
+            antialias: false
+        });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+        // Simplified geometry for better performance
+        const geometry = new THREE.TorusGeometry(6, 1.5, 8, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x8B4513,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2
+        });
+        const torus = new THREE.Mesh(geometry, material);
+        scene.add(torus);
+
+        const boxGeometry = new THREE.BoxGeometry(3, 3, 3);
+        const boxMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xA0522D,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.15
+        });
+        const box = new THREE.Mesh(boxGeometry, boxMaterial);
+        box.position.set(-10, 6, -6);
+        scene.add(box);
+
+        const sphereGeometry = new THREE.SphereGeometry(4, 16, 16);
+        const sphereMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x000000,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.1
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(10, -6, -4);
+        scene.add(sphere);
+
+        camera.position.setZ(20);
+
+        // Optimized animation loop
+        let frameCount = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (frameCount % 3 === 0) {
+                torus.rotation.x += 0.005;
+                torus.rotation.y += 0.003;
+                box.rotation.x += 0.006;
+                box.rotation.y += 0.006;
+                sphere.rotation.x += 0.003;
+                sphere.rotation.y += 0.005;
+            }
+            frameCount++;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Scroll indicator
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercent = (scrollTop / scrollHeight) * 100;
+            document.documentElement.style.setProperty('--scroll-percent', scrollPercent + '%');
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar functionality
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const menuToggle = document.getElementById('menuToggle');
+            const closeSidebar = document.getElementById('closeSidebar');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            });
+            
+            closeSidebar.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            // Job Application Modal
+            const jobModal = document.getElementById('jobModal');
+            const applyBtns = document.querySelectorAll('.apply-btn');
+            const closeJobBtn = document.querySelector('#jobModal .close');
+            const jobApplicationForm = document.getElementById('jobApplicationForm');
+            const jobPositionInput = document.getElementById('jobPosition');
+
+            // Function to open job modal
+            function openJobModal(job = '') {
+                if (job) {
+                    jobPositionInput.value = job;
+                }
+                jobModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Apply buttons
+            applyBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const job = this.getAttribute('data-job');
+                    openJobModal(job);
+                });
+            });
+
+            // Close job modal
+            if (closeJobBtn) {
+                closeJobBtn.addEventListener('click', function() {
+                    jobModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                });
+            }
+
+            // Job form submission
+            if (jobApplicationForm) {
+                jobApplicationForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Thank you for applying for the ' + (jobPositionInput.value || 'this position') + '! We will contact you shortly.');
+                    jobModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    this.reset();
+                });
+            }
+
+            // Gallery Modal
+            const galleryModal = document.getElementById('galleryModal');
+            const viewGalleryBtn = document.getElementById('viewGalleryBtn');
+            const closeGalleryBtn = document.querySelector('#galleryModal .close');
+            const modalGalleryContainer = document.querySelector('#galleryModal .gallery-container');
+
+            // Function to populate modal gallery
+            function populateModalGallery() {
+                modalGalleryContainer.innerHTML = '';
+                // Add all 30 images (assuming naming convention slide1.jpg to slide30.jpg)
+                for (let i = 1; i <= 30; i++) {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                        <img src="slide${i}.jpg">
+                    `;
+                    modalGalleryContainer.appendChild(galleryItem);
+                }
+            }
+
+            // View gallery button
+            if (viewGalleryBtn) {
+                viewGalleryBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    populateModalGallery();
+                    galleryModal.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+
+            // Close gallery modal
+            if (closeGalleryBtn) {
+                closeGalleryBtn.addEventListener('click', function() {
+                    galleryModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                });
+            }
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === jobModal) {
+                    jobModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+                if (e.target === galleryModal) {
+                    galleryModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Newsletter form submission
+            const newsletterForm = document.getElementById('newsletterForm');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = newsletterForm.querySelector('input[type="email"]').value;
+                    alert(`Thank you for subscribing with ${email}! You'll receive updates on our programs.`);
+                    newsletterForm.reset();
+                });
+            }
+
+            // Program links in footer
+            const programLinks = document.querySelectorAll('.program-link');
+            programLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const program = this.getAttribute('data-program');
+                    alert(`You selected ${program}. Please visit the respective page for more information.`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
